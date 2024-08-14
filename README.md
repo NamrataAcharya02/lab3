@@ -2,8 +2,8 @@
 TODO introduction
 
 ## Building
-```shell
-TODO
+```
+make
 ```
 
 ## Running
@@ -12,13 +12,13 @@ TODO how to run and results
 ```
 
 ## First Implementation
-In the `hash_table_v1_add_entry` function, I added TODO
+In the `hash_table_v1_add_entry` function, I added a lock in the first line of the function. This version adds a single global lock for the entire hash table, which means that each thread needs to access this lock in order to access the hash table. 
 
 ### Performance
 ```shell
 TODO how to run and results
 ```
-Version 1 is a little slower/faster than the base version. As TODO
+Version 1 is slower than the base version. As TODO
 
 ## Second Implementation
 In the `hash_table_v2_add_entry` function, I TODO
@@ -31,6 +31,6 @@ TODO how to run and results
 TODO more results, speedup measurement, and analysis on v2
 
 ## Cleaning up
-```shell
-TODO how to clean
+```
+make clean
 ```
