@@ -23,15 +23,22 @@ struct hash_table_entry {
 
 struct hash_table_v2 {
 	struct hash_table_entry entries[HASH_TABLE_CAPACITY];
+	pthread_mutex_t locks [16];
 };
 
 struct hash_table_v2 *hash_table_v2_create()
 {
 	struct hash_table_v2 *hash_table = calloc(1, sizeof(struct hash_table_v2));
 	assert(hash_table != NULL);
+	int j = 0;
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
-		pthread_mutex_init(&entry->mutex, NULL);
+		//pthread_mutex_init(&entry->mutex, NULL);
+		int index = i / 16;
+		if (i % 16 == 0) {
+			pthread_mutex_init(&hash_table->locks[index], NULL);
+		}
+		entry->mutex = hash_table->locks[index];
 		SLIST_INIT(&entry->list_head);
 	}
 	return hash_table;
