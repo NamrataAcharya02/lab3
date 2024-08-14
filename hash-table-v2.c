@@ -23,22 +23,23 @@ struct hash_table_entry {
 
 struct hash_table_v2 {
 	struct hash_table_entry entries[HASH_TABLE_CAPACITY];
-	pthread_mutex_t locks [16];
+	pthread_mutex_t locks [64];
 };
 
 struct hash_table_v2 *hash_table_v2_create()
 {
 	struct hash_table_v2 *hash_table = calloc(1, sizeof(struct hash_table_v2));
 	assert(hash_table != NULL);
-	int j = 0;
+	//int j = 0;
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
-		//pthread_mutex_init(&entry->mutex, NULL);
-		int index = i / 16;
-		if (i % 16 == 0) {
+		pthread_mutex_init(&entry->mutex, NULL);
+		/*int index = i / 64;
+		if (i % 64 == 0) {
 			pthread_mutex_init(&hash_table->locks[index], NULL);
-		}
-		entry->mutex = hash_table->locks[index];
+		} */
+		//&entry->mutex = &hash_table->locks[index]; 
+		
 		SLIST_INIT(&entry->list_head);
 	}
 	return hash_table;
@@ -82,14 +83,18 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
+	
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
-	struct list_head *list_head = &hash_table_entry->list_head;
+	//uint32_t index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
+	//index = index / 64;
 
+	struct list_head *list_head = &hash_table_entry->list_head;
 	if (pthread_mutex_lock(&hash_table_entry->mutex) != 0) {
 		exit(errno);
 	}
-	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
 
+	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
+	
 	/* Update the value if it already exists */
 	if (list_entry != NULL) {
 		list_entry->value = value;
@@ -124,7 +129,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		struct list_head *list_head = &entry->list_head;
 		struct list_entry *list_entry = NULL;
-		pthread_mutex_destroy(&entry->mutex);
+		//pthread_mutex_destroy(&entry->mutex);
 		while (!SLIST_EMPTY(list_head)) {
 			list_entry = SLIST_FIRST(list_head);
 			SLIST_REMOVE_HEAD(list_head, pointers);
