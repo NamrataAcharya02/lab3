@@ -21,7 +21,9 @@ For example, if we wanted to use 4 threads and 100,000 entries per thread, we wo
 The result displays the performance of a base strategy that uses no threading, the first locking strategy and the second locking strategy. The performance time is displayed in mu seconds. 
 
 ## First Implementation
-This version adds a single global lock for the entire hash table, which means that each thread needs to access this lock in order to access the hash table. Hence, the mutex lock is declared for the entire hash table in `struct hash_table_v1`. In the `hash_table_v1_add_entry` function, I locked the mutex in the first line of the function to prevent race conditions and keep access to the hash table itself in the critical section. To run this implementation with 4 threads and 100000 entries per thread, run:
+This version adds a single global lock for the entire hash table, which means that each thread needs to access this lock in order to access the hash table. Hence, the mutex lock is declared for the entire hash table in `struct hash_table_v1`. In the `hash_table_v1_add_entry` function, I locked the mutex in the first line of the function to prevent race conditions and keep any access to the hash table itself in the critical section. This keeps the hash table protected as a single global lock prevents access to it, which means threads will not be competing in race conditions when modifying values and there will be no deadlocks due to untimely context switches. Threads instead wait to obtain the single lock, ensuring each thread completes running before the next one executes. Only one thread runs at a time, ensuring correctness as operations happen in a sequential manner.
+
+To run this implementation with 4 threads and 100000 entries per thread, run:
 
 ### Running
 ```
