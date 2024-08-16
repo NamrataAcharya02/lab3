@@ -23,19 +23,22 @@ The result displays the performance of a base strategy that uses no threading, t
 ## First Implementation
 This version adds a single global lock for the entire hash table, which means that each thread needs to access this lock in order to access the hash table. Hence, the mutex lock is declared for the entire hash table in `struct hash_table_v1`. In the `hash_table_v1_add_entry` function, I locked the mutex in the first line of the function to prevent race conditions and keep any access to the hash table itself in the critical section. This keeps the hash table protected as a single global lock prevents access to it, which means threads will not be competing in race conditions when modifying values and there will be no deadlocks due to untimely context switches. Threads instead wait to obtain the single lock, ensuring each thread completes running before the next one executes. Only one thread runs at a time, ensuring correctness as operations happen in a sequential manner.
 
-To run this implementation with 4 threads and 100000 entries per thread, run:
+To run this implementation with 4 threads and 120000 entries per thread, run:
 
 ### Running
 ```
-./hash-table-tester -t 4 -s 100000
+./hash-table-tester -t 4 -s 120000
 
 ```
 ### Performance
 ```
-./hash-table-tester -t 4 -s 100000
-
+Hash table base: 2,483,808 usec
+  - 0 missing
+Hash table v1: 6,353,415 usec
+  - 0 missing
+Hash table v2: 897,499 usec
+  - 0 missing
 ```
-
 Version 1 is slower than the base version. The base version uses no threads, so it operates as a single threaded program. Despite Version 1 using multiple threads, it is slower since there is a significant overhead added by the locking mechanism. Since we have restricted access to the entire hash table through a global lock, threads wait for that single lock and hence, the program ends up functioning like a single threaded program. Only one thread can do any operations on the hash table. The additional performance cost of locking and unlocking mutexes means that Version 1 is slower than the base version. 
 
 ## Second Implementation
