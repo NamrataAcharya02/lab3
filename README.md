@@ -43,20 +43,30 @@ This strategy assigns a mutex lock for each bucket in the hash table, which repr
 
 In the `hash_table_v2_add_entry` function, I added the mutex locking call before getting the head of the linked list that the thread is trying to access. This is because multiple threads may be trying to insert to the same linked list and hence change the head pointers, which can become corrupted due to race conditions. To prevent this, we need to add fetching the head in the critical section. Only once a thread fetches the head, inserts an entry and reassigns the head can another thread work with the head and that linked list again. This makes the code concurrent and preserves correct operations without any missing entries.
 
-To run this implementation with 4 threads and 100000 entries per thread, run:
+To run this implementation with 4 threads and 120000 entries per thread, run:
 
 ### Running
 ```
-./hash-table-tester -t 4 -s 100000
+./hash-table-tester -t 4 -s 120000
 
 ```
+The results with performance times are shown below:
+
 ### Performance
 ```
-TODO how to run and results
+Hash table base: 3,159,345 usec
+  - 0 missing
+Hash table v1: 6,105,210 usec
+  - 0 missing
+Hash table v2: 999,733 usec
+  - 0 missing
 ```
 
 As we can see, Version 2 is faster than both base and Version 1 implementation. Due to multiple locks and a lock for each linked list in the hash table, threads no longer have to wait for the previous thread to finish its execution. The contention between threads for the data structure is reduced as different threads can work on different sections of the hash table at the same time. This allows concurrent use of the hash table and speeds up operations. It also makes it faster than the base implementation as instead of a single threaded execution, we can concurrently carry out the operations using multiple threads. This improvement is more significant than the cost of locking/unlocking mutexes, which makes version 2 faster than base. 
 
+Performance speedup:
+
+We can compare the performance times of base and v2 implementations for this run. The number of threads used is 4. Base/v2 time is 3159345/999733 = 3.16. In other words, Base/(4-1) = 3159345/3 = 1053115 >= 999733. With this strategy, we observe that v2 <= base/(num of cores - 1). This is a significant improvement and works as expected. 
 
 ## Cleaning up
 ```
