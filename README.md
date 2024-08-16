@@ -39,14 +39,24 @@ To run this implementation with 4 threads and 100000 entries per thread, run:
 Version 1 is slower than the base version. The base version uses no threads, so it operates as a single threaded program. Despite Version 1 using multiple threads, it is slower since there is a significant overhead added by the locking mechanism. Since we have restricted access to the entire hash table through a global lock, threads wait for that single lock and hence, the program ends up functioning like a single threaded program. Only one thread can do any operations on the hash table. The additional performance cost of locking and unlocking mutexes means that Version 1 is slower than the base version. 
 
 ## Second Implementation
-In the `hash_table_v2_add_entry` function, I 
+This strategy assigns a mutex lock for each bucket in the hash table, which represents separate linked lists. In this method, threads need not wait for the entire hash table to be available and can instead work on separate linked lists at the same time due to the separate mutexes. 
 
+In the `hash_table_v2_add_entry` function, I added the mutex locking call before getting the head of the linked list that the thread is trying to access. This is because multiple threads may be trying to insert to the same linked list and hence change the head pointers, which can become corrupted due to race conditions. To prevent this, we need to add fetching the head in the critical section. Only once a thread fetches the head, inserts an entry and reassigns the head can another thread work with the head and that linked list again. This makes the code concurrent and preserves correct operations without any missing entries.
+
+To run this implementation with 4 threads and 100000 entries per thread, run:
+
+### Running
+```
+./hash-table-tester -t 4 -s 100000
+
+```
 ### Performance
-```shell
+```
 TODO how to run and results
 ```
 
-TODO more results, speedup measurement, and analysis on v2
+As we can see, Version 2 is faster than both base and Version 1 implementation. Due to multiple locks and a lock for each linked list in the hash table, threads no longer have to wait for the previous thread to finish its execution. The contention between threads for the data structure is reduced as different threads can work on different sections of the hash table at the same time. This allows concurrent use of the hash table and speeds up operations. It also makes it faster than the base implementation as instead of a single threaded execution, we can concurrently carry out the operations using multiple threads. This improvement is more significant than the cost of locking/unlocking mutexes, which makes version 2 faster than base. 
+
 
 ## Cleaning up
 ```
