@@ -128,7 +128,7 @@ void hash_table_v1_destroy(struct hash_table_v1 *hash_table)
 			free(list_entry);
 		}
 	}
-	if (pthread_mutex_destroy(&entry->mutex) != 0) {
+	if (pthread_mutex_destroy(&hash_table->mutex) != 0) {
 			exit(errno);
 	}
 	free(hash_table);
